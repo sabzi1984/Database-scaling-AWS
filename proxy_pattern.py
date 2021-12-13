@@ -4,7 +4,7 @@ import socket
 import pickle
 from random import randint
 import argparse
-import  mysql-connector-python
+# import  mysql-connector-python
 from pythonping import ping
 
 
@@ -47,6 +47,9 @@ def main():
                     cursor.execute(command)
                     cnx.commit()
                     response = {'handled by':target_node, 'response': "OK"}
+                    response = pickle.dumps(response)
+                    conn.send(response)
+                    
                     
                 if cmd_type=="select" and mode=='direct':
                     targ=0
@@ -55,7 +58,8 @@ def main():
                     print ('Connection to DB opened')
                     cursor = cnx.cursor()
                     cursor.execute(command)
-                    response = {'handled by':target_node, 'response': cursor}
+                    print('handled by :{target_node}')
+                    conn.send(cursor)
                     
                 if cmd_type=="select" and mode=='random':
                     targ=randint(1, 3)
@@ -65,7 +69,8 @@ def main():
                     print ('Connection to DB opened')
                     cursor = cnx.cursor()
                     cursor.execute(command)
-                    response = {'handled by':target_node, 'response': cursor}
+                    print('handled by :{target_node}')
+                    conn.send(cursor)
                     # for (Series_reference, Period, Data_value, Status, Units, Magnitude, Series_title_1) in cursor:
                     #     print (f"{Series_reference}, {Period, Data_value}, {Status, Units}, {Magnitude}, {Series_title_1}")
                     
@@ -76,7 +81,8 @@ def main():
                     print ('Connection to DB opened')
                     cursor = cnx.cursor()
                     cursor.execute(command)
-                    response = {'handled by':target_node, 'response': cursor}
+                    print('handled by :{target_node}')
+                    conn.send(cursor)
                     # for (Series_reference, Period, Data_value, Status, Units, Magnitude, Series_title_1) in cursor:
                     #     print (f"{Series_reference}, {Period, Data_value}, {Status, Units}, {Magnitude}, {Series_title_1}")
                 
@@ -93,11 +99,11 @@ def main():
                 # send = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 
 
-                response = pickle.dumps(response)
-                # send.send(pickledobj)
+                # response = pickle.dumps(response)
+                # # send.send(pickledobj)
                 
-                # response =' handled by node ' + str(targ)
-                conn.send(response)
+                # # response =' handled by node ' + str(targ)
+                # conn.send(response)
 
         print ('Will close socket')
         # send.close()
