@@ -18,6 +18,7 @@ mode=args.mode
 # 0: master and [1,...]: slave id
 
 targets={0:{"ip":"34.202.223.21", "port":3306},1:{"ip":"35.174.80.126", "port":3306},2:{"ip":"52.5.114.194", "port":3306}}
+target_list=["34.202.223.21","35.174.80.126","52.5.114.194"]
 
 #socket programming, inspired from https://realpython.com/python-sockets/,  https://docs.python.org/3/library/socket.html, https://pythonprogramming.net/pickle-objects-sockets-tutorial-python-3/
 def main():
@@ -64,7 +65,7 @@ def main():
                 conn.send(response)
                 
             if cmd_type=="select" and mode=='random':
-                targ=randint(1, 3)
+                targ=randint(1, 2)
                 target_node="slave"+str(targ)
 
                 cnx = mysql.connector.connect(user='proxy', password='alfi1326', host=targets[targ]["ip"], database='tp3')
@@ -133,16 +134,26 @@ def load_data(data):
 
 
 def custom():
-    responses={}
-    for target in targets.keys():
-        resp = ping(target.server_host)
-        responses[target.server_host]=resp.rtt_avg
+    responses = {}
+    global target_list
+    connections = [mysql.connector.connect(user='proxy', password='alfi1326',
+                              host=ip) for ip in target_list]
 
-    fastest_host = min(responses, key=responses.get)
+    for node in connections:
+        response = ping(node.server_host)
+        responses[node.server_host]=response.rtt_avg
 
-    target = list(filter(lambda connection: connection.server_host == fastest_host, targets))[0]
-    return target
+    best_node = min(responses, key=responses.get)
+    best_node=str(best_node)
+    if best_node=="34.202.223.21":
+        node=0
+    elif best_node=="35.174.80.126":
+        node=1
+    elif best_node=="52.5.114.194":
+        node=2
+
+    return(node)
 
 
 if __name__ == '__main__':
-    main()
+    custom()
