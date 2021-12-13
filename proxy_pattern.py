@@ -1,12 +1,10 @@
 #!/usr/bin/python3
 
-import shlex
-from subprocess import Popen, PIPE, STDOUT
 import socket
 import pickle
 from random import randint
 import argparse
-import mysql.connector
+import  mysql-connector-python
 from pythonping import ping
 
 
@@ -40,23 +38,32 @@ def main():
                 
                 cmd_type, command = load_data(data)
                 
-                if cmd_type=="insert" or mode=='direct':
+                if cmd_type=="insert" and mode=='direct':
                     targ=0
                     target_node="master"
-                    cnx = mysql.connector.connect(user='root', password='alfi1326', host=targets[targ]["ip"], database='tp3')
+                    cnx = mysql.connector.connect(user='proxy', password='alfi1326', host=targets[targ]["ip"], database='tp3')
                     print ('Connection to DB opened')
                     cursor = cnx.cursor()
                     cursor.execute(command)
                     cnx.commit()
                     response = {'handled by':target_node, 'response': "OK"}
                     
-                
+                if cmd_type=="select" and mode=='direct':
+                    targ=0
+                    target_node="master"
+                    cnx = mysql.connector.connect(user='proxy', password='alfi1326', host=targets[targ]["ip"], database='tp3')
+                    print ('Connection to DB opened')
+                    cursor = cnx.cursor()
+                    cursor.execute(command)
+                    response = {'handled by':target_node, 'response': cursor}
+                    
                 if cmd_type=="select" and mode=='random':
                     targ=randint(1, 3)
                     target_node="slave"+str(targ)
 
-                    cnx = mysql.connector.connect(user='root', password='alfi1326', host=targets[targ]["ip"], database='tp3')
+                    cnx = mysql.connector.connect(user='proxy', password='alfi1326', host=targets[targ]["ip"], database='tp3')
                     print ('Connection to DB opened')
+                    cursor = cnx.cursor()
                     cursor.execute(command)
                     response = {'handled by':target_node, 'response': cursor}
                     # for (Series_reference, Period, Data_value, Status, Units, Magnitude, Series_title_1) in cursor:
@@ -65,8 +72,9 @@ def main():
                 if cmd_type=="select" and mode=='custom':
                     targ=custom()
                     target_node="slave"+str(targ)
-                    cnx = mysql.connector.connect(user='root', password='alfi1326', host=targets[targ]["ip"], database='tp3')
+                    cnx = mysql.connector.connect(user='proxy', password='alfi1326', host=targets[targ]["ip"], database='tp3')
                     print ('Connection to DB opened')
+                    cursor = cnx.cursor()
                     cursor.execute(command)
                     response = {'handled by':target_node, 'response': cursor}
                     # for (Series_reference, Period, Data_value, Status, Units, Magnitude, Series_title_1) in cursor:
