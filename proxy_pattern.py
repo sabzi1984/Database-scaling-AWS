@@ -4,7 +4,7 @@ import socket
 import pickle
 from random import randint
 import argparse
-# import  mysql-connector-python
+import mysql.connector
 from pythonping import ping
 
 
