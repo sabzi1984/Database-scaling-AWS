@@ -6,6 +6,10 @@ import socket
 import pickle
 from random import randint
 import argparse
+import mysql.connector
+from pythonping import ping
+
+
 
 
 parser = argparse.ArgumentParser()
@@ -15,7 +19,7 @@ args = parser.parse_args()
 mode=args.mode 
 # 0: master and [1,...]: slave id
 
-targets={0:{"ip":"ec2-18-212-67-21.compute-1.amazonaws.com", "port":5001},1:{"ip":"ec2-18-212-201-7.compute-1.amazonaws.com", "port":5001},2:{"ip":"ec2-18-233-9-44.compute-1.amazonaws.com", "port":5002},3:{"ip":"ec2-54-235-230-176.compute-1.amazonaws.com", "port":5001}}
+targets={0:{"ip":"34.202.223.21", "port":3306},1:{"ip":"35.174.80.126", "port":3306},2:{"ip":"52.5.114.194", "port":3306}}
 
 #socket programming, inspired from https://realpython.com/python-sockets/,  https://docs.python.org/3/library/socket.html, https://pythonprogramming.net/pickle-objects-sockets-tutorial-python-3/
 def main():
@@ -33,38 +37,66 @@ def main():
                 data = conn.recv(2048) 
                 if not data:
                     break
-                data = str(data)
-                print ('data: ' , data)
                 
-                cmd_type, command = parse_data(data)
+                cmd_type, command = load_data(data)
                 
                 if cmd_type=="insert" or mode=='direct':
                     targ=0
+                    target_node="master"
+                    cnx = mysql.connector.connect(user='root', password='alfi1326', host=targets[targ]["ip"], database='tp3')
+                    print ('Connection to DB opened')
+                    cursor = cnx.cursor()
+                    cursor.execute(command)
+                    cnx.commit()
+                    response = {'handled by':target_node, 'response': "OK"}
+                    
                 
                 if cmd_type=="select" and mode=='random':
                     targ=randint(1, 3)
+                    target_node="slave"+str(targ)
+
+                    cnx = mysql.connector.connect(user='root', password='alfi1326', host=targets[targ]["ip"], database='tp3')
+                    print ('Connection to DB opened')
+                    cursor.execute(command)
+                    response = {'handled by':target_node, 'response': cursor}
+                    # for (Series_reference, Period, Data_value, Status, Units, Magnitude, Series_title_1) in cursor:
+                    #     print (f"{Series_reference}, {Period, Data_value}, {Status, Units}, {Magnitude}, {Series_title_1}")
                     
                 if cmd_type=="select" and mode=='custom':
                     targ=custom()
+                    target_node="slave"+str(targ)
+                    cnx = mysql.connector.connect(user='root', password='alfi1326', host=targets[targ]["ip"], database='tp3')
+                    print ('Connection to DB opened')
+                    cursor.execute(command)
+                    response = {'handled by':target_node, 'response': cursor}
+                    # for (Series_reference, Period, Data_value, Status, Units, Magnitude, Series_title_1) in cursor:
+                    #     print (f"{Series_reference}, {Period, Data_value}, {Status, Units}, {Magnitude}, {Series_title_1}")
                 
                 
-                send = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                send.connect((targets[targ]["ip"], targets[targ]["port"]))
+                # send = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                # send.connect((targets[targ]["ip"], targets[targ]["port"]))
+                # cnx = mysql.connector.connect(user='root', password='alfi1326', host=targets[targ]["ip"], database='tp3')
+                # print ('Connection to DB opened')
+                # cursor = cnx.cursor()
+                # if cmd_type == 'insert':
+                # cursor.execute(command)
+                # cnx.commit()
+                
+                # send = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 
 
-                obj = {'type':cmd_type, 'command': command}
-                pickledobj = pickle.dumps(obj)
-                send.send(pickledobj)
+                response = pickle.dumps(response)
+                # send.send(pickledobj)
                 
-                response =' handled by node ' + str(targ)
+                # response =' handled by node ' + str(targ)
                 conn.send(response)
 
         print ('Will close socket')
-        send.close()
+        # send.close()
         listen.close()
 
 
-def parse_data(data):
+def load_data(data):
     data=pickle.loads(data)
     
     type = 'select'
@@ -78,33 +110,16 @@ def parse_data(data):
 
 
 def custom():
-    selectedSlave = 1
-    minTiming = 999999
+    responses={}
+    for target in targets.keys():
+        resp = ping(target.server_host)
+        responses[target.server_host]=resp.rtt_avg
 
-    for slaveIndex in range (1, 4):
-        slaveConfigName = 'Slave' + str(slaveIndex)
-        host = config.get(slaveConfigName, 'host')
-        time = get_ping_time(host, 1)
-        print ('Slave-' + str(slaveIndex) + ' timing: ' + str(time))
-        if time < minTiming:
-            minTiming = time
-            selectedSlave = slaveIndex
+    fastest_host = min(responses, key=responses.get)
 
-    return selectedSlave
+    target = list(filter(lambda connection: connection.server_host == fastest_host, targets))[0]
+    return target
 
-def get_command_output(cmd, stderr=STDOUT):
-
-    args = shlex.split(cmd)
-    return Popen(args, stdout=PIPE, stderr=stderr).communicate()[0]
-
-def get_ping_time(host, tryCount=3):
-    host = host.split(':')[0]
-    cmd = 'fping {host} -C {tryCount} -q'.format(host=host, tryCount=tryCount)
-    res = [float(x) for x in get_command_output(cmd).strip().split(':')[-1].split() if x != '-']
-    if len(res) > 0:
-        return sum(res)/len(res)
-    else:
-        return 9999999
 
 if __name__ == '__main__':
     main()
