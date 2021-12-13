@@ -71,12 +71,12 @@ def main():
                 print ('Connection to DB opened')
                 cursor = cnx.cursor()
                 cursor.execute(command)
-                print('handled by :{target_node}')
+                print(f'handled by :{target_node}')
                 result = cursor.fetchall()
                 response={'handled by' :{target_node}, 'result':result}
                 response = pickle.dumps(response)
                 
-                conn.send(result)
+                conn.send(response)
                 # for (Series_reference, Period, Data_value, Status, Units, Magnitude, Series_title_1) in cursor:
                 #     print (f"{Series_reference}, {Period, Data_value}, {Status, Units}, {Magnitude}, {Series_title_1}")
                 
@@ -87,10 +87,11 @@ def main():
                 print ('Connection to DB opened')
                 cursor = cnx.cursor()
                 cursor.execute(command)
-                print('handled by :{target_node}')
+                print(f'handled by :{target_node}')
                 result = cursor.fetchall()
                 response={'handled by' :{target_node}, 'result':result}
                 response = pickle.dumps(response)
+                conn.send(response)
                 # for (Series_reference, Period, Data_value, Status, Units, Magnitude, Series_title_1) in cursor:
                 #     print (f"{Series_reference}, {Period, Data_value}, {Status, Units}, {Magnitude}, {Series_title_1}")
             
