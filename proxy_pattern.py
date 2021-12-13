@@ -113,9 +113,9 @@ def main():
             # # response =' handled by node ' + str(targ)
             # conn.send(response)
 
-print ('Will close socket')
-# send.close()
-listen.close()
+    print ('Will close socket')
+    # send.close()
+    listen.close()
 
 
 def load_data(data):
