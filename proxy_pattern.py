@@ -83,7 +83,10 @@ def main():
                 
             if cmd_type=="select" and mode=='custom':
                 targ=custom()
-                target_node="slave"+str(targ)
+                if targ==0:
+                    target_node=="master"
+                else:
+                    target_node="slave"+str(targ)
                 cnx = mysql.connector.connect(user='proxy', password='alfi1326', host=targets[targ]["ip"], database='tp3')
                 print ('Connection to DB opened')
                 cursor = cnx.cursor()
@@ -156,4 +159,4 @@ def custom():
 
 
 if __name__ == '__main__':
-    custom()
+    main()
