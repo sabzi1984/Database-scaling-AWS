@@ -7,21 +7,19 @@ import re
 def main():
 
 
-    listenPort = 5001
-    #target = master
-    targetHost = "54.237.135.3"
-    targetPort = 5001
+    host_ip = "54.237.135.3"
+    host_port = 5001
 
 
-    send = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    send.connect((targetHost, targetPort))
+    
 
     listen = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    listen.bind(('', listenPort))
+    listen.bind(('', 5001))
     listen.listen(1)
     conn, addr = listen.accept()
     print(f"Connection from {addr} has been established.")
-    cmd_type = ''
+    send = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    send.connect((host_ip, host_port))
     with conn:
         print('Connected by', addr)
 
@@ -37,7 +35,7 @@ def main():
                 send.send(pickledobj)
                 response="data validated by gatekeeper"
             else:
-                response="data DENIED by gatekeeper")
+                response="data DENIED by gatekeeper"
                 print ('Data sent')
 
             conn.send(response)
