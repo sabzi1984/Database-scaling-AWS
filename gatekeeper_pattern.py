@@ -30,15 +30,20 @@ def main():
                 break
             data = pickle.loads(data)
             if(validate(data)):
-                print ('Will pass data')
+                print ('Data Validated by gatekeeper')
                 pickledobj = pickle.dumps(data)
                 send.send(pickledobj)
-                response="data validated by gatekeeper"
+                data = s.recv(1024)
+                data = pickle.loads(data)
+                data['validation_result']="VALID"
+                data=pickle.dumps(data)
+                conn.send(data)
+                
             else:
                 response="data DENIED by gatekeeper"
-                print ('Data sent')
-
-            conn.send(response)
+                print ('Data Denied')
+                response = pickle.dumps(response)
+                conn.send(response)
 
     print ('closing socket')
     send.close()
