@@ -1,0 +1,62 @@
+insert+proxy direct
+
+real    1m58.583s
+user    0m0.000s
+sys     0m0.046s
+
+
+select+proxy direct
+
+real    2m4.406s
+user    0m0.000s
+sys     0m0.031s
+
+
+
+proxy random
+
+real    1m56.701s
+user    0m0.015s
+sys     0m0.000s
+
+
+
+proxy custom
+
+real    3m23.638s
+user    0m0.000s
+sys     0m0.015s
+
+
+
+insert+gatekeeper+proxy direct
+
+real    1m59.138s
+user    0m0.031s
+sys     0m0.031s
+
+
+
+
+select+gatekeeper+proxy direct
+
+real    2m11.389s
+user    0m0.015s
+sys     0m0.000s
+
+
+gatekeeper+proxy random
+
+real    1m59.271s
+user    0m0.000s
+sys     0m0.031s
+
+
+
+gatekeeper+proxy custom
+
+real    3m22.389s
+user    0m0.000s
+sys     0m0.015s
+
+
