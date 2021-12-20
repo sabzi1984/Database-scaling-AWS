@@ -50,13 +50,13 @@ def main():
     listen.close()
 
 
-select_validator = re.compile(r"(^select \* from transactions where Series_reference = [\d]{3,4};)")
+select_validator = re.compile(r"(^select \* from transactions where Series_reference = \d{3,4};)")
 insert_validator = re.compile(r"(^insert into transactions values)")
 
 
 def validate(data):
     cmd_type = data['type']
-    cmd=data['command'].lower()
+    cmd=data['command']
     # print (data)
     if cmd_type=='insert':
         return bool(insert_validator.match(cmd))

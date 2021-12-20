@@ -84,7 +84,7 @@ def main():
             if cmd_type=="select" and mode=='custom':
                 targ=custom()
                 if targ==0:
-                    target_node=="master"
+                    target_node="master"
                 else:
                     target_node="slave"+str(targ)
                 cnx = mysql.connector.connect(user='proxy', password='alfi1326', host=targets[targ]["ip"], database='tp3')
